@@ -204,7 +204,7 @@ fun CustomProgressBar(
         LinearProgressIndicator(
             progress = { progress },
             color = Color.Unspecified,
-            trackColor = trackColor,
+            //trackColor = trackColor,
             modifier = Modifier
                 .align(Alignment.Center)
                 .fillMaxWidth()
@@ -217,7 +217,7 @@ fun CustomProgressBar(
                         )
                     )
                     onDrawBehind {
-                        val strokeWidth = screenSize
+                        val strokeWidth = 20f
                         val newProgress = progress * size.width
 
                         // Draw the progress line with gradient

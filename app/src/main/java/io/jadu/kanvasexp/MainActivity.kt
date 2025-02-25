@@ -17,10 +17,17 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -35,11 +42,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Matrix
+import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.PointMode
@@ -47,7 +60,11 @@ import androidx.compose.ui.graphics.RadialGradientShader
 import androidx.compose.ui.graphics.RenderEffect
 import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.ShaderBrush
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.DrawStyle
@@ -58,10 +75,20 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.graphics.shapes.CornerRounding
+import androidx.graphics.shapes.Morph
+import androidx.graphics.shapes.RoundedPolygon
+import androidx.graphics.shapes.toPath
 import io.jadu.kanvasexp.ui.theme.KanvasExpTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.round
+import kotlin.math.sin
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -73,7 +100,9 @@ class MainActivity : ComponentActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Column(modifier = Modifier.padding(innerPadding))
                     {
-                        TunnelShader()
+                        ShapesAnimation()
+                        //Drawing()
+                        //TunnelShader()
                         //FractalShader()
                         //GradientsAndShaders()
                         //Kanvas()
@@ -84,6 +113,24 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
+/**
+ * Created by JADU @author(Rohit-554) on 24/02/2025.
+ * */
+@Composable
+fun ShapesAnimation(){
+    Box(
+        modifier = Modifier.fillMaxSize().background(Color.Black)
+    ) {
+        MorphingAnimation()
+    }
+}
+
+
+
+
+
+
 
 
 private const val FRACTAL_SHADER_SRC = """
@@ -191,7 +238,7 @@ fun TunnelShader() {
     var time by remember { mutableStateOf(0f) }
 
     LaunchedEffect(Unit) {
-        while(true) {
+        while (true) {
             time = (System.currentTimeMillis() % 100_000L) / 1_000f
             delay(16) // ~60 FPS
         }
@@ -222,7 +269,7 @@ fun FractalShader() {
     var time by remember { mutableStateOf(0f) }
 
     LaunchedEffect(Unit) {
-        while(true) {
+        while (true) {
             time = (System.currentTimeMillis() % 100_000L) / 1_000f
             delay(16) // Approximately 60 FPS
         }
@@ -362,7 +409,7 @@ fun ShaderEffect() {
 
 
 @Composable
-fun GradientsAndShaders(){
+fun GradientsAndShaders() {
     val brush = Brush.linearGradient(
         colors = listOf(Color.Red, Color.Blue),
     )
@@ -371,36 +418,36 @@ fun GradientsAndShaders(){
     }
     val listColors = listOf(Color.Yellow, Color.Red, Color.Blue)
 
-   /* Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Canvas(
-            modifier = Modifier.size(200.dp),
-            onDraw = {
-                drawCircle(
-                    brush
-                )
-            }
-        )
-    }
-    Box(
-        modifier = Modifier
-            .requiredSize(300.dp)
-            .background(
-                Brush.horizontalGradient(
-                    listColors,
-                    endX = tileSize,
-                    tileMode = TileMode.Mirror
-                )
-            )
-    )
-*/
+    /* Column(
+         modifier = Modifier.fillMaxSize(),
+         verticalArrangement = Arrangement.Center,
+         horizontalAlignment = Alignment.CenterHorizontally,
+     ) {
+         Canvas(
+             modifier = Modifier.size(200.dp),
+             onDraw = {
+                 drawCircle(
+                     brush
+                 )
+             }
+         )
+     }
+     Box(
+         modifier = Modifier
+             .requiredSize(300.dp)
+             .background(
+                 Brush.horizontalGradient(
+                     listColors,
+                     endX = tileSize,
+                     tileMode = TileMode.Mirror
+                 )
+             )
+     )
+ */
     //For radial gradient
-    val largeRadialGradient = object: ShaderBrush() {
+    val largeRadialGradient = object : ShaderBrush() {
         override fun createShader(size: Size): Shader {
-            val biggerDimension = maxOf(size.height,size.width)
+            val biggerDimension = maxOf(size.height, size.width)
             return RadialGradientShader(
                 colors = listOf(Color(0xFF2be4dc), Color(0xFF243484)),
                 center = size.center,
@@ -431,7 +478,7 @@ fun Kanvas() {
         drawCircle(
             color = color,
             radius = canvasWidth / 5,
-            center = Offset(canvasWidth/2,canvasHeight/2),
+            center = Offset(canvasWidth / 2, canvasHeight / 2),
             style = Stroke(
                 width = 20f,
                 pathEffect = PathEffect.chainPathEffect(
@@ -444,15 +491,228 @@ fun Kanvas() {
         drawRect(
             color = color,
             size = Size(100f, 100f),
-            topLeft = Offset((canvasWidth-100f)/2,(canvasHeight-100f)/2),
+            topLeft = Offset((canvasWidth - 100f) / 2, (canvasHeight - 100f) / 2),
 
-        )
+            )
     }
 }
 
 
 @Composable
-fun Drawing(){}
+fun Drawing() {
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Start
+        ) {
+            Box(
+                modifier = Modifier
+                    .width(20.dp)
+                    .height(100.dp)
+                    .background(
+                        color = Color.Yellow,
+                        shape = RoundedCornerShape(10f)
+                    )
+                    .wrapContentSize()
+                    .drawWithContent {
+                        drawLine(
+                            color = Color.Black,
+                            start = Offset(-40f, -50f),
+                            end = Offset(20.dp.toPx(), -50f),
+                            strokeWidth = 4f,
+                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 1f)
+                        )
+                    }
+            )
+            Spacer(modifier = Modifier.width(20.dp))
+            Box(
+                modifier = Modifier
+                    .width(30.dp)
+                    .height(100.dp)
+                    .background(
+                        color = Color.White,
+                        shape = RoundedCornerShape(10f)
+                    )
+                    .wrapContentSize()
+                    .drawWithContent {
+
+                        drawRoundRect(
+                            topLeft = Offset(-15.dp.toPx(), 12.dp.toPx()),
+                            color = Color.Black,
+                            size = Size(30.dp.toPx(), 100f),
+                            cornerRadius = CornerRadius(10f, 10f),
+                            style = Fill,
+                        )
+                        drawLine(
+                            color = Color.Black,
+                            start = Offset(-50f, -60f),
+                            end = Offset(20.dp.toPx(), -60f),
+                            strokeWidth = 4f,
+                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 1f)
+                        )
+                    }
+            )
+            Spacer(modifier = Modifier.width(20.dp))
+            val points = listOf(
+                Offset(0f, 20f),
+                Offset(50f, 25f),
+                Offset(100f, 35f),
+                Offset(150f, 45f),
+                Offset(200f, 55f),
+                Offset(250f, 65f),
+                Offset(300f, 70f),
+                Offset(350f, 72f),
+                Offset(400f, 70f),
+                Offset(450f, 65f),
+                Offset(500f, 55f),
+                Offset(550f, 45f),
+                Offset(600f, 35f),
+                Offset(650f, 25f),
+                Offset(700f, 20f)
+            )
+            Box(
+                modifier = Modifier
+                    .width(200.dp)
+                    .height(100.dp)
+                    .background(Color.DarkGray)
+                    .drawWithContent {
+                        points.zipWithNext { current, next ->
+                            val angle = atan2(next.y - current.y, next.x - current.x)
+
+                            // Calculate circle intersection points
+                            val startX = current.x + cos(angle) * 10f
+                            val startY = current.y + sin(angle) * 10f
+                            val endX = next.x - cos(angle) * 10f
+                            val endY = next.y - sin(angle) * 10f
+
+                            drawLine(
+                                color = Color.White,
+                                start = Offset(startX, startY),
+                                end = Offset(endX, endY),
+                                strokeWidth = 4f,
+                                cap = StrokeCap.Round
+                            )
+                        }
+
+                        // Draw circles
+                        points.forEach { point ->
+                            drawCircle(
+                                color = Color.White,
+                                radius = 10f,
+                                center = point,
+                                style = Stroke(width = 4f),
+                            )
+                        }
+                    }
+            )
+
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Start
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp)
+                    .background(
+                        color = Color.Transparent,  // Changed to transparent to see the bars
+                        shape = RoundedCornerShape(10f)
+                    )
+                    .drawWithContent {
+                        // Draw the horizontal line in the middle
+                        drawLine(
+                            color = Color.Black,
+                            start = Offset(0f, size.height / 2),
+                            end = Offset(size.width, size.height / 2),
+                            strokeWidth = 2f
+                        )
+
+                        val barWidth = size.width / 4  // Width of each bar
+                        val spacing = 0f  // No spacing between bars as per image
+
+                        // Draw top (red) bars
+                        drawRect(
+                            color = Color(0xFFFF6B6B),  // Light red
+                            topLeft = Offset(0f, size.height * 0.25f),
+                            size = Size(barWidth, size.height * 0.25f)
+                        )
+
+                        drawRect(
+                            color = Color(0xFFFF6B6B),
+                            topLeft = Offset(barWidth * 2, size.height * 0.25f),
+                            size = Size(barWidth, size.height * 0.25f)
+                        )
+
+                        // Draw bottom (green) bars
+                        drawRect(
+                            color = Color(0xFF98CE64),  // Light green
+                            topLeft = Offset(barWidth, size.height * 0.5f),
+                            size = Size(barWidth, size.height * 0.25f)
+                        )
+
+                        drawRect(
+                            color = Color(0xFF98CE64),
+                            topLeft = Offset(barWidth * 3, size.height * 0.5f),
+                            size = Size(barWidth, size.height * 0.25f)
+                        )
+                    }
+            )
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp)
+                    .background(
+                        color = Color.Transparent,
+                        shape = RoundedCornerShape(10f)
+                    )
+                    .drawWithContent {
+                        // Draw the horizontal line in the middle
+                        drawLine(
+                            color = Color.Black,
+                            start = Offset(0f, size.height / 2),
+                            end = Offset(size.width, size.height / 2),
+                            strokeWidth = 2f
+                        )
+
+                        val barWidth = size.width / 4  // Width of each bar
+                        val spacing = 0f  // No spacing between bars as per image
+
+                        // Draw top (red) bars
+                        drawRect(
+                            color = Color(0xFFFF6B6B),  // Light red
+                            topLeft = Offset(0f, size.height * 0.25f),
+                            size = Size(barWidth, size.height * 0.25f)
+                        )
+
+                        drawRect(
+                            color = Color(0xFFFF6B6B),
+                            topLeft = Offset(barWidth * 2, size.height * 0.25f),
+                            size = Size(barWidth, size.height * 0.25f)
+                        )
+
+                        // Draw bottom (green) bars
+                        drawRect(
+                            color = Color(0xFF98CE64),  // Light green
+                            topLeft = Offset(barWidth, size.height * 0.5f),
+                            size = Size(barWidth, size.height * 0.25f)
+                        )
+
+                        drawRect(
+                            color = Color(0xFF98CE64),
+                            topLeft = Offset(barWidth * 3, size.height * 0.5f),
+                            size = Size(barWidth, size.height * 0.25f)
+                        )
+                    }
+            )
+
+        }
+    }
+
+
+}
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {

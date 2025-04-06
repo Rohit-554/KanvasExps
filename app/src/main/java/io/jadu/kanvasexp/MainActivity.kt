@@ -876,6 +876,86 @@ fun button() {
 }
 
 
+@Composable
+fun FancyCanvasUI(modifier: Modifier = Modifier) {
+    val infiniteTransition = rememberInfiniteTransition()
+    val animatedRadius by infiniteTransition.animateFloat(
+        initialValue = 50f,
+        targetValue = 100f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1500, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(Brush.verticalGradient(
+                colors = listOf(Color(0xFF0F2027), Color(0xFF2C5364))
+            ))
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val center = Offset(size.width / 2, size.height / 2)
+
+            // Outer gradient circle
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(Color.Cyan, Color.Transparent),
+                    center = center,
+                    radius = animatedRadius * 2
+                ),
+                center = center,
+                radius = animatedRadius * 2
+            )
+
+            // Inner glowing circle
+            drawCircle(
+                color = Color.Magenta.copy(alpha = 0.7f),
+                radius = animatedRadius,
+                center = center,
+                style = Fill
+            )
+
+            // Shadow Circle
+            drawCircle(
+                color = Color.White.copy(alpha = 0.2f),
+                center = center + Offset(100f, 100f),
+                radius = 30f,
+                style = Fill
+            )
+
+            // Decorative lines
+            for (i in 0..360 step 30) {
+                val angleRad = Math.toRadians(i.toDouble())
+                val startX = center.x + cos(angleRad) * 120
+                val startY = center.y + sin(angleRad) * 120
+                val endX = center.x + cos(angleRad) * 150
+                val endY = center.y + sin(angleRad) * 150
+
+                drawLine(
+                    color = Color.White.copy(alpha = 0.3f),
+                    start = Offset(startX.toFloat(), startY.toFloat()),
+                    end = Offset(endX.toFloat(), endY.toFloat()),
+                    strokeWidth = 3f
+                )
+            }
+        }
+
+        Text(
+            text = "Galaxy Canvas",
+            style = TextStyle(
+                color = Color.White,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                shadow = Shadow(Color.Black, offset = Offset(2f, 2f), blurRadius = 5f)
+            ),
+            modifier = Modifier.align(Alignment.TopCenter).padding(top = 50.dp)
+        )
+    }
+}
+
+
 @OptIn(ExperimentalFoundationApi::class)
 @Preview
 @Composable

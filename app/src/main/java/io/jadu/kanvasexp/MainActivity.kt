@@ -148,6 +148,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import io.jadu.kanvasexp.burpy.HealthConnectScreen
+import io.jadu.kanvasexp.burpy.healthConnect.HealthConnectPermissionScreen
 import kotlin.random.Random
 
 
@@ -165,7 +167,9 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
                     Column(modifier = Modifier.padding(innerPadding))
                     {
-                        KawaiiCloudWithRainbow()
+                        HealthConnectPermissionScreen()
+                        //HealthConnectScreen()
+                        //KawaiiCloudWithRainbow()
                         //HolographicGalaxy()
                        // AnimatedHeart()
                        /* ButtonComponent(

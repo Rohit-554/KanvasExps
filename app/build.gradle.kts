@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace = "io.jadu.kanvasexp"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "io.jadu.kanvasexp"
-        minSdk = 24
-        targetSdk = 35
+        minSdk = 26
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -57,4 +57,10 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation ("androidx.graphics:graphics-shapes:1.0.1")
+    val koin_version = "4.0.4"
+    implementation("io.insert-koin:koin-compose:${koin_version}")
+    implementation("io.insert-koin:koin-compose-viewmodel:${koin_version}")
+    implementation("io.insert-koin:koin-compose-viewmodel-navigation:${koin_version}")
+    implementation("androidx.health.connect:connect-client:1.1.0-rc01")
+    implementation("com.google.code.gson:gson:2.10.1")
 }

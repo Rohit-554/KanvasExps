@@ -63,4 +63,6 @@ dependencies {
     implementation("io.insert-koin:koin-compose-viewmodel-navigation:${koin_version}")
     implementation("androidx.health.connect:connect-client:1.1.0-rc01")
     implementation("com.google.code.gson:gson:2.10.1")
+    implementation(libs.bottom.sheet)
+    implementation("androidx.compose.material:material-icons-extended:1.7.8")
 }
